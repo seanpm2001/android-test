@@ -16,6 +16,7 @@
 
 package androidx.test.ext.junit.runners;
 
+import com.google.android.apps.common.testing.accessibility.framework.integrations.internal.passivescan.PassiveScanner;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -51,6 +52,7 @@ public final class AndroidJUnit4 extends Runner implements Filterable, Sortable 
   private static final String TAG = "AndroidJUnit4";
 
   private final Runner delegate;
+  private final PassiveScanner a11yPassiveScanner = new PassiveScanner();
 
   public AndroidJUnit4(Class<?> klass) throws InitializationError {
     delegate = loadRunner(klass);
@@ -159,7 +161,14 @@ public final class AndroidJUnit4 extends Runner implements Filterable, Sortable 
 
   @Override
   public void run(RunNotifier runNotifier) {
+    a11yPassiveScanner.beforeTest();
+
+    // Run the tests
     delegate.run(runNotifier);
+
+    a11yPassiveScanner.afterTest(
+        delegate.getDescription().getTestClass().getSimpleName(),
+        delegate.getDescription().getMethodName());
   }
 
   @Override
